@@ -5,16 +5,18 @@ class Api::V1::ProductsControllerTest < ActionDispatch::IntegrationTest
     @product = products(:one)
   end
 
-  test "should show products" do
-    get api_v1_product_url(@product), as: :json
+  test 'should show products' do
+    get api_v1_products_url, as: :json
     assert_response :success
 
     json_response = JSON.parse(response.body, symbolize_names: true)
-    assert_equal @product.title, json_response.dig(:data, :attributes, :title)
-    assert_equal @product.user.id.to_s, json_response.dig(:data, :relationships, :user, :data, :id)
-    assert_equal @product.user.email, json_response.dig(:included, 0, :attributes, :email)
+    assert_not_nil json_response.dig(:links, :first)
+    assert_not_nil json_response.dig(:links, :last)
+    assert_not_nil json_response.dig(:links, :next)
+    assert_not_nil json_response.dig(:links, :prev)
   end
 
+  
   test "should show product" do
     get api_v1_product_url(@product), as: :json
     assert_response :success
