@@ -15,3 +15,4 @@ User.delete_all
     puts "Created a brand new product: #{product.title}"
   end
 end
+
