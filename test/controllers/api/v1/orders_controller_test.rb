@@ -3,6 +3,7 @@ require 'test_helper'
 class Api::V1::OrdersControllerTest < ActionDispatch::IntegrationTest
   setup do
     @order = products(:one)
+
     @order_params = {
       order: {
         product_ids_and_quantities: [
@@ -12,12 +13,9 @@ class Api::V1::OrdersControllerTest < ActionDispatch::IntegrationTest
       }
     }
   end
-  
 
-  test 'should forbid create order for unlogged' do
-    assert_no_difference('Order.count') do
-      post api_v1_orders_url, params: @order_params, as: :json
-    end
+  test 'should forbid orders for unlogged' do
+    get api_v1_orders_url, as: :json
     assert_response :forbidden
   end
 
@@ -25,12 +23,9 @@ class Api::V1::OrdersControllerTest < ActionDispatch::IntegrationTest
     get api_v1_orders_url, headers: { Authorization: JsonWebToken.encode(user_id: @order.user_id) }, as: :json
     assert_response :success
 
-    json_response = JSON.parse(response.body)
-    assert_equal @order.user.orders.count, json_response['data'].count
-    assert_not_nil json_response.dig(:links, :first)
-    assert_not_nil json_response.dig(:links, :last)
-    assert_not_nil json_response.dig(:links, :prev)
-    assert_not_nil json_response.dig(:links, :next)
+    json_response = JSON.parse(response.body, symbolize_names: true)
+    assert_equal @order.user.orders.count, json_response[:data].count
+    assert_json_response_is_paginated json_response
   end
 
   test 'should show order' do
@@ -42,6 +37,13 @@ class Api::V1::OrdersControllerTest < ActionDispatch::IntegrationTest
     json_response = JSON.parse(response.body)
     include_product_attr = json_response['included'][0]['attributes']
     assert_equal @order.products.first.title, include_product_attr['title']
+  end
+
+  test 'should forbid create order for unlogged' do
+    assert_no_difference('Order.count') do
+      post api_v1_orders_url, params: @order_params, as: :json
+    end
+    assert_response :forbidden
   end
 
   test 'should create order with two products and placements' do
