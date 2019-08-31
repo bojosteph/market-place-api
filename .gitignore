@@ -22,5 +22,9 @@
 !/storage/.keep
 .byebug_history
 
+/client/node_modules
+/node_modules
+/yarn-error.log
+
 # Ignore master key for decrypting credentials and more.
 /config/master.key
