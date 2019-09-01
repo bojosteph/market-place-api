@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { registerUser } from '../../actions/authActions';
+import classnames from 'classnames';
 
 export class Register extends Component {
   constructor() {
@@ -9,6 +12,14 @@ export class Register extends Component {
       password: "",
       errors: {}
     };
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.errors) {
+      this.setState({
+        errors: nextProps.errors
+      });
+    }
   }
 
   onChange = e => {
@@ -22,9 +33,8 @@ export class Register extends Component {
       email: this.state.email,
       password: this.state.password
     }
-
-    console.log(newUser)
-  }
+    this.props.registerUser(newUser, this.props.history)       
+  };
   render() {
     const { errors } = this.state;
     return (
@@ -46,7 +56,11 @@ export class Register extends Component {
                        onChange={this.onChange} 
                        value={this.state.email}
                        error={errors.email}
-                       id="email" />
+                       id="email" 
+                       className={classnames("", {
+                        invalid: errors.email
+                      })}
+                       />
                   <label htmlFor="email">Email</label>
               </div>
               <div className="input-field col s12">
@@ -54,7 +68,11 @@ export class Register extends Component {
                        onChange={this.onChange} 
                        value={this.state.password}
                        error={errors.password}
-                       id="password" />
+                       id="password"
+                       className={classnames("", {
+                        invalid: errors.password
+                      })}
+                       />
                   <label htmlFor="password">Password</label>
               </div>
               <div className="col-s12" style={{paddingLeft: "11.250px"}}>
@@ -79,4 +97,9 @@ export class Register extends Component {
   }
 }
 
-export default Register;
+const mapStateToProps = state => ({
+  auth: state.auth,
+  errors: state.errors
+})
+
+export default connect(mapStateToProps, { registerUser })(withRouter(Register));
